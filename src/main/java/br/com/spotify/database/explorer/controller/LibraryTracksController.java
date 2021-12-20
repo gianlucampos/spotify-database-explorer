@@ -1,6 +1,8 @@
 package br.com.spotify.database.explorer.controller;
 
-import br.com.spotify.database.explorer.models.SongMapper;
+import br.com.spotify.database.explorer.models.Song;
+import br.com.spotify.database.explorer.models.SpotifyApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,10 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping(value = "/library/tracks")
 public class LibraryTracksController {
 
+    @Autowired
+    private SpotifyApi spotifyApi;
+
     private static final String URL_BASE = "https://api.spotify.com/v1/me/tracks";
-    private static final String SCOPE = "user-library-modify";
 
     /**
      * @see <a href="https://developer.spotify.com/documentation/web-api/reference/#/operations/get-track">Liked Tracks</a>
@@ -25,13 +29,11 @@ public class LibraryTracksController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getLikedSongs() {
         try {
-//            String TOKEN = SecurityConfig.getAuthenticateToken();
-            String TOKEN = "Bearer BQBVc0g9Hyu-KslViSuORFgBrJDqCPjmgT1hxb80a5UtE3-Oo7jXLVfe_NIQJcYYhyhblKzbLvAXJiSYh2zjf0xjF7v8pL7z38xM_sFlhd3HDKreAq7JJqY4GmIhoTD_pFQhAwDuSPfej2BMaGYFFDScyMbM2cdkZbojig7X-f9tG38ziaPZvV09dYp5VyFbNw";
             RestTemplate restTemplate = new RestTemplateBuilder()
-                    .defaultHeader("Authorization", TOKEN)
+                    .defaultHeader("Authorization", "Bearer " + spotifyApi.getAcess_token())
                     .build();
             ResponseEntity<String> response = restTemplate.getForEntity(URL_BASE, String.class);
-            return ResponseEntity.ok(SongMapper.toDomain(response.getBody()));
+            return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
